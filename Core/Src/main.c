@@ -56,15 +56,6 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(htim);
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_TIM_PeriodElapsedCallback could be implemented in the user file
-   */
-}
 
 /* USER CODE END 0 */
 
@@ -107,7 +98,8 @@ HAL_TIM_Base_Start_IT(&htim2);
   while (1)
   {
     /* USER CODE END WHILE */
-
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+		HAL_Delay(100);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
