@@ -56,20 +56,28 @@ static void MX_TIM4_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint16_t count =4;
+uint16_t count = 0;
+uint16_t last = 0;
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == GPIO_PIN_9)
-    {
-        count++;
-        if (count > 4)
-				{ 
-					count = 0;
-				}
-
-        uint16_t dutyCycle = 9999 * count /4;  
-        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, dutyCycle);
-    }
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(GPIO_Pin);
+  /* NOTE: This function Should not be modified, when the callback is needed,
+           the HAL_GPIO_EXTI_Callback could be implemented in the user file
+   */
+	if(GPIO_Pin == GPIO_PIN_9)
+	{
+		uint16_t now = HAL_GetTick();
+		if( (now - last) > 200)
+		{
+			last = now;
+			count ++;
+			if( count > 4) count = 0;
+			uint16_t dutyCycle = 999 * count /4;  
+         __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, dutyCycle);
+		}
+	}
 }
 
 /* USER CODE END 0 */
@@ -115,7 +123,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		HAL_Delay(1000);
+		HAL_Delay(100);
 
     /* USER CODE BEGIN 3 */
   }
@@ -183,7 +191,7 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 79;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 9999;
+  htim4.Init.Period = 999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
