@@ -59,24 +59,39 @@ static void MX_TIM4_Init(void);
 uint16_t count = 0;
 uint16_t last = 0;
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+//{
+//  /* Prevent unused argument(s) compilation warning */
+//  UNUSED(GPIO_Pin);
+//  /* NOTE: This function Should not be modified, when the callback is needed,
+//           the HAL_GPIO_EXTI_Callback could be implemented in the user file
+//   */
+//	if(GPIO_Pin == GPIO_PIN_9)
+//	{
+//		uint16_t now = HAL_GetTick();
+//		if( (now - last) > 200)
+//		{
+//			last = now;
+//			count ++;
+//			if( count > 4) count = 0;
+//			uint16_t dutyCycle = 999 * count /4;  
+//         __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, dutyCycle);
+//		}
+//	}
+//}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* Prevent unused argument(s) compilation warning */
-  UNUSED(GPIO_Pin);
-  /* NOTE: This function Should not be modified, when the callback is needed,
-           the HAL_GPIO_EXTI_Callback could be implemented in the user file
+  UNUSED(htim);
+
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_TIM_PeriodElapsedCallback could be implemented in the user file
    */
-	if(GPIO_Pin == GPIO_PIN_9)
+	if(count <= 4)
 	{
-		uint16_t now = HAL_GetTick();
-		if( (now - last) > 200)
-		{
-			last = now;
-			count ++;
-			if( count > 4) count = 0;
-			uint16_t dutyCycle = 999 * count /4;  
-         __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, dutyCycle);
-		}
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+		count++;
 	}
 }
 
@@ -113,7 +128,8 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+	HAL_TIM_Base_Start_IT(&htim4);
+//	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
 	
   /* USER CODE END 2 */
 
@@ -122,8 +138,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		HAL_Delay(100);
 
     /* USER CODE BEGIN 3 */
   }
@@ -183,15 +197,14 @@ static void MX_TIM4_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM4_Init 1 */
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 79;
+  htim4.Init.Prescaler = 7999;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 999;
+  htim4.Init.Period = 8999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
@@ -203,28 +216,15 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
-  {
-    Error_Handler();
-  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
   /* USER CODE BEGIN TIM4_Init 2 */
 
   /* USER CODE END TIM4_Init 2 */
-  HAL_TIM_MspPostInit(&htim4);
 
 }
 
